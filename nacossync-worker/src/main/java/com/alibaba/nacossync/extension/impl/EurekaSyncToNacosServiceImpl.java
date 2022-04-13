@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.util.CollectionUtils;
 
 /**
@@ -54,6 +55,9 @@ public class EurekaSyncToNacosServiceImpl implements SyncService {
     private final NacosServerHolder nacosServerHolder;
 
     private final SpecialSyncEventBus specialSyncEventBus;
+
+    @Value("${mdd.eureka.default-group:DEFAULT_GROUP}")
+    private String defaultGroup;
 
     @Autowired
     public EurekaSyncToNacosServiceImpl(EurekaServerHolder eurekaServerHolder,
@@ -94,8 +98,10 @@ public class EurekaSyncToNacosServiceImpl implements SyncService {
             NamingService destNamingService = nacosServerHolder.get(taskDO.getDestClusterId());
 
             List<InstanceInfo> eurekaInstances = eurekaNamingService.getApplications(taskDO.getServiceName());
-            List<Instance> nacosInstances = destNamingService.getAllInstances(taskDO.getServiceName(),
-                NacosUtils.getGroupNameOrDefault(taskDO.getGroupName()));
+//            List<Instance> nacosInstances = destNamingService.getAllInstances(taskDO.getServiceName(),
+//                    NacosUtils.getGroupNameOrDefault(taskDO.getGroupName()));
+
+            List<Instance> nacosInstances = destNamingService.getAllInstances(taskDO.getServiceName(), defaultGroup);
 
             if (CollectionUtils.isEmpty(eurekaInstances)) {
                 // Clear all instance from Nacos
