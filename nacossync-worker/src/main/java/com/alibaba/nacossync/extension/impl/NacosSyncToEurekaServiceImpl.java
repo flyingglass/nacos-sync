@@ -48,6 +48,10 @@ import lombok.extern.slf4j.Slf4j;
 @NacosSyncService(sourceCluster = ClusterTypeEnum.NACOS, destinationCluster = ClusterTypeEnum.EUREKA)
 public class NacosSyncToEurekaServiceImpl implements SyncService {
 
+    private static final String EXPIRATION_INTERVAL_IN_SECONDS_KEY = "lease-expiration-interval-in-seconds";
+    private static final String DEFAULT_EXPIRATION_INTERVAL_IN_SECONDS_VALUE = "90";
+
+
     private final Map<String, EventListener> nacosListenerMap = new ConcurrentHashMap<>();
 
     private final MetricsManager metricsManager;
@@ -168,6 +172,11 @@ public class NacosSyncToEurekaServiceImpl implements SyncService {
         String homePageUrl = obtainHomePageUrl(instance, instanceMetadata);
         String serviceName = taskDO.getServiceName();
 
+        // 添加expiration
+        int expirationInSecs = Integer.parseInt(
+                metadata.getOrDefault(EXPIRATION_INTERVAL_IN_SECONDS_KEY, DEFAULT_EXPIRATION_INTERVAL_IN_SECONDS_VALUE)
+        );
+
         return new InstanceInfo(
             instance.getIp() + ":" + serviceName + ":" + instance.getPort(),
             serviceName,
@@ -188,7 +197,7 @@ public class NacosSyncToEurekaServiceImpl implements SyncService {
             InstanceInfo.InstanceStatus.UP,
             InstanceInfo.InstanceStatus.UNKNOWN,
             null,
-            new LeaseInfo(30, 90,
+            new LeaseInfo(30, expirationInSecs,
                 0L, 0L, 0L, 0L, 0L),
             false,
             metadata,
