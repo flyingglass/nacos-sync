@@ -56,9 +56,6 @@ public class EurekaSyncToNacosServiceImpl implements SyncService {
 
     private final SpecialSyncEventBus specialSyncEventBus;
 
-    @Value("${mdd.eureka.default-group:DEFAULT_GROUP}")
-    private String defaultGroup;
-
     @Autowired
     public EurekaSyncToNacosServiceImpl(EurekaServerHolder eurekaServerHolder,
         SkyWalkerCacheServices skyWalkerCacheServices, NacosServerHolder nacosServerHolder,
@@ -98,10 +95,11 @@ public class EurekaSyncToNacosServiceImpl implements SyncService {
             NamingService destNamingService = nacosServerHolder.get(taskDO.getDestClusterId());
 
             List<InstanceInfo> eurekaInstances = eurekaNamingService.getApplications(taskDO.getServiceName());
-//            List<Instance> nacosInstances = destNamingService.getAllInstances(taskDO.getServiceName(),
-//                    NacosUtils.getGroupNameOrDefault(taskDO.getGroupName()));
 
-            List<Instance> nacosInstances = destNamingService.getAllInstances(taskDO.getServiceName(), defaultGroup);
+            List<Instance> nacosInstances = destNamingService.getAllInstances(
+                    taskDO.getServiceName(),
+                    NacosUtils.getGroupNameOrDefault(taskDO.getGroupName())
+            );
 
             if (CollectionUtils.isEmpty(eurekaInstances)) {
                 // Clear all instance from Nacos
